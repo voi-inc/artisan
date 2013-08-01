@@ -1,0 +1,13 @@
+language: python
+python:
+  - "2.7.3"
+# install native libraries
+before_install:
+ - sudo apt-get install python-dev
+ - sudo apt-get install libxml2-dev
+ - sudo apt-get install libxslt-dev
+# command to install dependencies
+install:
+  - pip setup.py
+# command to run tests
+script: python -m unittest artisan.tests.artisan_test
