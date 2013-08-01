@@ -8,6 +8,6 @@ before_install:
  - sudo apt-get install libxslt-dev
 # command to install dependencies
 install:
-  - pip setup.py
+  - pip setup.py install
 # command to run tests
 script: python -m unittest artisan.tests.artisan_test
