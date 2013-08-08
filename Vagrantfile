@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
-  #config.vm.synced_folder "/Users/jaymon/Projects/FirstOpinion/ops/_ops", "/ops"
+  config.vm.synced_folder "/Users/jaridmargolin/Dropbox/firstopinion/dev/ops", "/ops"
 
   # http://docs.vagrantup.com/v2/vagrantfile/ssh_settings.html
   # neither of these seem to do anything
@@ -63,6 +63,7 @@ Vagrant.configure("2") do |config|
     chef.add_recipe "package::update"
     chef.add_recipe "package"
     chef.add_recipe "pip"
+    chef.add_recipe "environ"
 
     #chef.add_role ""
 
@@ -83,6 +84,13 @@ Vagrant.configure("2") do |config|
           "pout",
           "pyt"
         ],
+      },
+      "environ" => {
+        "global" => {
+          :set => {
+            'PYTHONDONTWRITEBYTECODE' => '1'
+          }
+        }
       }
     }
 

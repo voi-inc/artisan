@@ -11,7 +11,7 @@ if os.path.exists('README.txt'): long_description = open('README.txt').read()
 
 # Setup Package
 setup(
-    name = 'Artisan',
+    name = 'email-artisan',
     version = '0.0.1',
     description = 'CLI build tool to help ease the pain of developing emails.',
     long_description = long_description,
@@ -24,10 +24,11 @@ setup(
 		'Jinja2==2.7',
 		'premailer==1.2.2',
 		'watchdog==0.6.0',
+        'flexmock==0.9.4'
 	],
     packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     entry_points = {
         'console_scripts': ['artisan = artisan:console']
     },
-    test_suite = "artisan.tests.artisan_test"
+    test_suite = "tests"
 )

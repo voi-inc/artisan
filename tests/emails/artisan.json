@@ -1,0 +1,7 @@
+{
+	"port": 8080,
+	"aws": {
+		"aws_access_key_id": "iamakey",
+		"aws_secret_access_key": "soami"
+	}
+}

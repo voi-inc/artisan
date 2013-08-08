@@ -10,7 +10,9 @@ CLI build tool to help ease the pain of developing emails.
 Installation
 ------------
 
-`pip install email-artisan`
+Installing from source (from root):
+
+`python setup.py install`
 
 
 
@@ -20,6 +22,7 @@ Setup
 Artisan uses a specific directory structure in order to build. Make sure your working directory matches
 
 	- (Working Directory)
+	  - artisan.json
 	  - src
 	    - masters
 	      - [master name]
@@ -29,6 +32,18 @@ Artisan uses a specific directory structure in order to build. Make sure your wo
 	      - [message name]
 	        - index.html
 	        - images
+
+Add an artisan.json file to your working directory:
+
+	{
+		"port": 8080,
+		"src": os.path.join(os.getcwd(), 'src'),
+		"dest": os.path.join(os.getcwd(), 'build')
+		"aws": {
+			"aws_access_key_id": "ACCESS_KEY",
+			"aws_secret_access_key": "SECRET_KEY"
+		}
+	}
 
 
 
@@ -41,36 +56,42 @@ Usage
 
 #### Options
 
-| Name   | Description                                            | Short | Default     |
-| ------ | ------------------------------------------------------ | ----- | ----------- |
-| --cwd  | Dir script is executed from                            | -d    | os.getcwd() |
-| --port | Port files are served.                                 | -p    | 8080        |
-| --src  | Src dir that will be built (relative to cwd)           | -s    | src         |
-| --out  | Output dir that src will be built to (relative to cwd) | -o    | dev         |
+| Name   | Short |  Description                                           | Default     |
+| ------ | ----- | ------------------------------------------------------ | ----------- |
+| --cwd  | -d    | Dir script is executed from                            | os.getcwd() |
+| --port | -p    | Port files are served.                                 | 8080        |
+| --src  | -s    | Src dir that will be built (relative to cwd)           | src         |
+| --out  | -o    | Output dir that src will be built to (relative to cwd) | dev         |
 
 ### Publish:
 
 `artisan ship`
-
-Add an artisan.json file to your working directory:
-
-{
-
-}
 
 
 
 Tests
 -----
 
-Navigate to dir. Must be run from project root
+From root:
 
-`python -m unittest artisan.tests.artisan_test`
+`python setup.py test`
 
 
 
-Contributing
-------------
+Developing
+----------
+
+From root:
+
+`python setup.py develop`
+
+
+
+Todos
+-----
+
+	1. Integrate with AWS
+	2. Add to Pip
 
 
 

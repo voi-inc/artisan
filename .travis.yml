@@ -10,4 +10,4 @@ before_install:
 install:
   - python setup.py install
 # command to run tests
-script: python -m unittest artisan.tests.artisan_test
+script: python setup.py test
