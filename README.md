@@ -32,13 +32,13 @@ Artisan uses a specific directory structure in order to build. Make sure your wo
 	      - [message name]
 	        - index.html
 	        - images
+	  - build (created when artisan ship)
+	  - preview (created when running artisan craft)
 
 Add an artisan.json file to your working directory:
 
 	{
 		"port": 8080,
-		"src": os.path.join(os.getcwd(), 'src'),
-		"dest": os.path.join(os.getcwd(), 'build')
 		"aws": {
 			"aws_access_key_id": "ACCESS_KEY",
 			"aws_secret_access_key": "SECRET_KEY"
@@ -60,8 +60,6 @@ Usage
 | ------ | ----- | ------------------------------------------------------ | ----------- |
 | --cwd  | -d    | Dir script is executed from                            | os.getcwd() |
 | --port | -p    | Port files are served.                                 | 8080        |
-| --src  | -s    | Src dir that will be built (relative to cwd)           | src         |
-| --out  | -o    | Output dir that src will be built to (relative to cwd) | dev         |
 
 ### Publish:
 
@@ -90,8 +88,10 @@ From root:
 Todos
 -----
 
-	1. Integrate with AWS
-	2. Add to Pip
+1. Add to pip
+2. Write tests for S3 sync using fake-s3: https://github.com/jubos/fake-s3
+3. Update ship to only push modified images
+4. Allow ship to push to github? or remote server?
 
 
 

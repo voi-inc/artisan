@@ -24,7 +24,8 @@ setup(
 		'Jinja2==2.7',
 		'premailer==1.2.2',
 		'watchdog==0.6.0',
-        'flexmock==0.9.4'
+        'flexmock==0.9.4',
+        'boto==2.9.9'
 	],
     packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     entry_points = {

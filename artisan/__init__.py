@@ -5,28 +5,52 @@ import argparse
 
 # artisan
 from utils import merge
-from artisan import Artisan
-
+from server import Server
+from watcher import Watcher
+from builder import Builder
 
 #
-# Load Json and return data
+# Artisan Class. The engine that builds and syncs assets
 #
-def getConfig(path):
+class Artisan(object):
 
-	# Config defaults
-	default = {
-		"port": 8080,
-		"src": os.path.join(os.getcwd(), 'src'),
-		"dest": os.path.join(os.getcwd(), 'build')
-	}
+	#
+	# Get config data on init
+	#
+	def __init__(self, method):
 
-	# Open, parse data, and close
-	file = open(path)
-	data = json.load(file)
-	file.close()
+		# Cache
+		self.src = os.path.join(os.getcwd(), 'src')
 
-	# Merge and return
-	return merge(default, data)
+		# Open, parse, and close config
+		file = open(os.path.join(os.getcwd(), 'artisan.json'))
+		data = json.load(file)
+		file.close()
+
+		# Merge and return
+		self.config = merge({"port": 8080}, data)
+
+		# Call passed method
+		method = getattr(self, method)
+		method()
+
+
+	#
+	# Starting crafting by setting up a temp server
+	# and observing file system for changes
+	#
+	def craft(self):
+		dest = self.src.replace(os.path.basename(self.src), 'preview')
+		watcher = Watcher(self.src, dest)
+		server = Server(dest, self.port)
+
+	#
+	# Sync assets to s3 and create final build templates
+	#
+	def ship(self):
+		dest = self.src.replace(os.path.basename(self.src), 'build')
+		artisan = Artisan('cloud', self.src, dest, self.aws)
+		artisan.build()
 
 
 #
@@ -39,16 +63,8 @@ def console():
 	parser.add_argument('method', help='directory to serve from', type=str, choices=['craft', 'ship'])
 	args = parser.parse_args()
 
-	# Get config
-	configPath = os.path.join(os.getcwd(), 'artisan.json')
-	config = getConfig(configPath)
-
 	# Run program
-	artisan = Artisan(config['src'], config['dest'], config['port'], config['aws'])
-	if args.method == 'craft':
-		artisan.craft()
-	else:
-		artisan.ship()
+	artisan = Artisan(args.method)
 
 
 # Do not run if imported

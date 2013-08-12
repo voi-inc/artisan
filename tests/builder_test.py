@@ -1,100 +1,99 @@
 # stdlib
 import unittest
 import os
+import time
 import shutil
 
-# module
+# 3rd party
+from flexmock import flexmock
+
+# artisan
 from artisan.builder import Builder
 
 
-#
-# Builder unit tests
-#
 class BuilderTest(unittest.TestCase):
+    """
+    Test individual methods in Builder class.
+    """
 
-    #
-    # Setup
-    #
-    @classmethod
-    def setUpClass(self):
+    # Properties
+    src = os.path.join(os.getcwd(), 'tests/emails/src')
+    dest = os.path.join(os.getcwd(), 'tests/emails/build')
+    aws = {
+        "aws_access_key_id": "id",
+        "aws_secret_access_key": "secret",
+        "bucket": "email-artisan"
+    }
 
-        # Graphical Helper
-        print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-        print 'BUILDER TEST'
-        print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+    def setUp(self):
+        # Cache vars
+        self.success_message = self.create_paths('messages/success')
+        self.welcome_message = self.create_paths('messages/welcome')
+        self.first_master = self.create_paths('masters/01')
+        self.first_master_images = self.create_paths('masters/01/images')
+        self.second_master = self.create_paths('masters/02')
+        self.second_master_images = self.create_paths('masters/02/images')
 
-        # init builder
-        # self.builder = Builder()
+    def create_paths(self, str):
+        # Convenience fn to create paths and return dict.
+        return  {
+            'src': os.path.join(self.src, str),
+            'build': os.path.join(self.dest, str)
+        }
 
-    #
-    # Teardown
-    #
-    @classmethod
-    def tearDownClass(self):
-        print 'teardown'
-        # shutil.rmtree(self.devDir)
-
-
-    #
-    # Build all masters and messages 
-    #
-    def test_build(self):
-        print 'build'
-
-
-    #
-    # Loop over all masters and sync media
-    #
-    def test_build_masters(self):
-        print 'build masters'
-
-
-    #
-    # Loop over all messages and build
-    #
-    def test_build_messages(self):
-        print 'build messages'
-
-
-    #
-    # Build one message
-    #
-    def test_build_message(self):
-        print 'build message'
-
-
-    #
-    # Write
-    #
     def test_write(self):
-        print 'craft'
-        # self.assertTrue(os.path.isfile(filePath))
+        # new builder and write
+        builder = Builder('local', self.src, self.dest, self.aws)
+        builder.write_template(self.success_message['src'])
+        # check for successfull write
+        self.assertTrue(os.path.isfile(os.path.join(self.success_message['build'], 'index.html')))
+        # clean up
+        shutil.rmtree(self.dest)
 
-
-    # 
-    # Sync images
-    #
     def test_sync(self):
-        print 'sync'
+        # Cache img dir
+        img_dir = os.path.join(self.success_message['src'], 'images')
 
-    # 
-    # Sync local
-    #
+        # Test sync with local set
+        loc_builder = Builder('local', self.src, self.dest, self.aws)
+        (flexmock(loc_builder)
+            .should_receive("sync_local")
+            .with_args(img_dir)
+            .times(1)
+        )
+        loc_builder.sync(self.success_message['src'])
+
+        # Test sync with cloud set
+        cloud_builder = Builder('cloud', self.src, self.dest, self.aws)
+        (flexmock(cloud_builder)
+            .should_receive("sync_cloud")
+            .with_args(img_dir)
+            .times(1)
+        )
+        cloud_builder.sync(self.success_message['src'])
+
     def test_sync_local(self):
-        print 'sync local'
+        # Cache img dir
+        img_src_dir = os.path.join(self.success_message['src'], 'images')
+        img_build_dir = os.path.join(self.success_message['build'], 'images')
+        # Test 
+        builder = Builder('local', self.src, self.dest, self.aws)
+        builder.sync_local(img_src_dir)
+        # Check for successfull write
+        self.assertTrue(os.path.isdir(img_build_dir))
+        # clean up
+        shutil.rmtree(self.dest)
 
-
-    # 
-    # Sync cloud
-    #
     def test_sync_cloud(self):
-        print 'sync cloud'
+        # TODO (jaridmargolin): Implement fake-s3 for tests
+        pass
 
 
-#
-# Gather all the tests from this module in a test suite.
-#
 def suite():
+    """
+    Gather all the tests from this module in a test suite.
+    """
+
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(BuilderTest))
     return test_suite

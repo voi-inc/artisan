@@ -1,7 +1,8 @@
 {
 	"port": 8080,
 	"aws": {
-		"aws_access_key_id": "iamakey",
-		"aws_secret_access_key": "soami"
+		"aws_access_key_id": "AKIAJF6NWXT4KPOR7NSQ",
+		"aws_secret_access_key": "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",
+		"bucket": "fomail"
 	}
 }

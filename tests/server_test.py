@@ -3,54 +3,41 @@ import unittest
 import os
 import urllib
 
-# module
+# artisan
 from artisan.server import Server
 
 
-#
-# Server unit tests
-#
 class ServerTest(unittest.TestCase):
+    """
+    Test individual methods in Server class.
+    """
 
     # Properties
     PORT = 8080
     serve_dir = os.path.join(os.getcwd(), 'tests/emails')
     test_url = 'http://localhost:8080/artisan.json'
 
-    #
-    # Create new server
-    #
     @classmethod
     def setUpClass(self):
-
-        # Graphical Helper
-        print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-        print 'SERVER TEST'
-        print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-
-        # Start Server
+        # Start server
         self.server = Server(self.serve_dir, self.PORT)
 
-
-    #
-    # Shutdown server after testing
-    #
     @classmethod
     def tearDownClass(self):
+        # Stop server daemon
         self.server.shutdown()
 
-
-    #
-    # Request and check status code
-    #
     def test_server(self):
+        # Request anc check status code
         status = urllib.urlopen(self.test_url).getcode()
         self.assertEqual(status, 200)
 
-#
-# Gather all the tests from this module in a test suite.
-#
+
 def suite():
+    """
+    Gather all the tests from this module in a test suite.
+    """
+    
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(ServertTest))
     return test_suite
