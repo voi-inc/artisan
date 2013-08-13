@@ -91,7 +91,6 @@ Todos
 1. Add to pip
 2. Write tests for S3 sync using fake-s3: https://github.com/jubos/fake-s3
 3. Update ship to only push modified images
-4. Allow ship to push to github? or remote server?
 
 
 

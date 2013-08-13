@@ -36,7 +36,7 @@ class BuilderTest(unittest.TestCase):
 
     def create_paths(self, str):
         # Convenience fn to create paths and return dict.
-        return  {
+        return {
             'src': os.path.join(self.src, str),
             'build': os.path.join(self.dest, str)
         }
@@ -46,7 +46,8 @@ class BuilderTest(unittest.TestCase):
         builder = Builder('local', self.src, self.dest, self.aws)
         builder.write_template(self.success_message['src'])
         # check for successfull write
-        self.assertTrue(os.path.isfile(os.path.join(self.success_message['build'], 'index.html')))
+        file_path = os.path.join(self.success_message['build'], 'index.html')
+        self.assertTrue(os.path.isfile(file_path))
         # clean up
         shutil.rmtree(self.dest)
 
@@ -59,8 +60,7 @@ class BuilderTest(unittest.TestCase):
         (flexmock(loc_builder)
             .should_receive("sync_local")
             .with_args(img_dir)
-            .times(1)
-        )
+            .times(1))
         loc_builder.sync(self.success_message['src'])
 
         # Test sync with cloud set
@@ -68,15 +68,14 @@ class BuilderTest(unittest.TestCase):
         (flexmock(cloud_builder)
             .should_receive("sync_cloud")
             .with_args(img_dir)
-            .times(1)
-        )
+            .times(1))
         cloud_builder.sync(self.success_message['src'])
 
     def test_sync_local(self):
         # Cache img dir
         img_src_dir = os.path.join(self.success_message['src'], 'images')
         img_build_dir = os.path.join(self.success_message['build'], 'images')
-        # Test 
+        # Test
         builder = Builder('local', self.src, self.dest, self.aws)
         builder.sync_local(img_src_dir)
         # Check for successfull write

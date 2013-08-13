@@ -37,7 +37,7 @@ def suite():
     """
     Gather all the tests from this module in a test suite.
     """
-    
+
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(ServertTest))
     return test_suite

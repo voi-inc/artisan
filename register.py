@@ -16,7 +16,8 @@ f.write(doc.rst)
 f.close()
 
 # Register using setup.py
-os.system("setup.py register")
+print(os.getcwd())
+os.system("sudo python setup.py register")
 
 # Rempve temporary README.txt
 os.remove('README.txt')

@@ -16,10 +16,22 @@ class WatcherTest(unittest.TestCase):
     """
 
     # Properties
-    src_dir = os.path.join(os.getcwd(), 'tests/emails/src')
-    dest_dir = os.path.join(os.getcwd(), 'tests/emails/build')
-    message_file_path = os.path.join(os.getcwd(), 'tests/emails/src/messages/test.html')
-    master_file_path = os.path.join(os.getcwd(), 'tests/emails/src/masters/test.html')
+    src_dir = os.path.join(
+        os.getcwd(),
+        'tests/emails/src'
+    )
+    dest_dir = os.path.join(
+        os.getcwd(),
+        'tests/emails/build'
+    )
+    message_file_path = os.path.join(
+        os.getcwd(),
+        'tests/emails/src/messages/test.html'
+    )
+    master_file_path = os.path.join(
+        os.getcwd(),
+        'tests/emails/src/masters/test.html'
+    )
 
     @classmethod
     def setUpClass(cls):
@@ -30,8 +42,7 @@ class WatcherTest(unittest.TestCase):
         (cls.builder
             .should_receive("__init__")
             .with_args('local', cls.src_dir, cls.dest_dir)
-            .times(1)
-        )
+            .times(1))
         # New watcher should be accessible to all test methods.
         cls.watcher = artisan.watcher.Watcher(cls.src_dir, cls.dest_dir)
 
@@ -47,8 +58,7 @@ class WatcherTest(unittest.TestCase):
         (self.builder
             .should_receive("build_message")
             .with_args(self.message_file_path)
-            .times(1)
-        )
+            .times(1))
         # Create and close file.
         file = open(self.message_file_path, 'w+')
         file.close()
@@ -60,8 +70,7 @@ class WatcherTest(unittest.TestCase):
         (self.builder
             .should_receive("build")
             .with_args()
-            .times(1)
-        )
+            .times(1))
         # Create and close file.
         file = open(self.master_file_path, 'w+')
         file.close()

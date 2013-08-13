@@ -2,10 +2,11 @@
 from copy import deepcopy
 
 
-#
-# Helper method to deep merge to dicts
-#
 def merge(a, b):
+    """
+    Helper method to deep merge to dicts
+    """
+
     if not isinstance(b, dict):
         return b
     result = deepcopy(a)
