@@ -4,7 +4,7 @@ import time
 
 # 3rd party
 from watchdog.observers.polling import PollingObserver as Observer
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEventHandler, DirModifiedEvent
 
 # artisan
 from builder import Builder
@@ -50,8 +50,9 @@ class ObserverHandler(FileSystemEventHandler):
 
     def dispatch(self, event):
         # Modified to not dispatch create
-        if event.event_type != 'created':
+        if not isinstance(event, DirModifiedEvent):
             self.on_any_event(event)
+            
         # Dispatch to individual listeners
         _method_map = {
             'modified': self.on_modified,
@@ -72,7 +73,7 @@ class ObserverHandler(FileSystemEventHandler):
     def get_base_dir(self, path):
         # Helper method to return parent directory - either master or message.
         path = path.replace(self.src, '')
-        #return path.split('/')[1]
+        return path.split('/')[1]
 
 
 # Do not run if imported

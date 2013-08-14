@@ -26,11 +26,11 @@ class WatcherTest(unittest.TestCase):
     )
     message_file_path = os.path.join(
         os.getcwd(),
-        'tests/emails/src/messages/test.html'
+        'tests/emails/src/messages/success/test.html'
     )
     master_file_path = os.path.join(
         os.getcwd(),
-        'tests/emails/src/masters/test.html'
+        'tests/emails/src/masters/01/test.html'
     )
 
     @classmethod
@@ -63,7 +63,7 @@ class WatcherTest(unittest.TestCase):
         file = open(self.message_file_path, 'w+')
         file.close()
         # Block with time sleep so watcher has time to trigger fn.
-        time.sleep(1)
+        time.sleep(2)
 
     def test_masterchange(self):
         # Make sure build method is called and passed proper vars.
@@ -75,7 +75,7 @@ class WatcherTest(unittest.TestCase):
         file = open(self.master_file_path, 'w+')
         file.close()
         # Block with time sleep so watcher has time to trigger fn.
-        time.sleep(1)
+        time.sleep(2)
 
 
 class TestBuilder(object):
