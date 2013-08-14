@@ -49,13 +49,20 @@ class Builder(object):
 
     def build_messages(self):
         """
-        Loop over all messages and build.
+        Loop over all messages and build each html file. Also, sync 
+        images in eacher message directory
         """
 
-        for name in os.listdir(self.message_tmpls):
-            message_path = os.path.join(self.message_tmpls, name)
-            self.write_template(message_path)
-            self.sync(message_path)
+        for dir_name in os.listdir(self.message_tmpls):
+            message_dir = os.path.join(self.message_tmpls, dir_name)
+            # Loop through all files in message dir
+            for file_name in os.listdir(message_dir):
+                # if html write
+                file_path = os.path.join(message_dir, file_name)
+                if file_path.endswith(".html"):
+                    self.write_template(file_path)
+            # sync dir images
+            self.sync(message_dir)
 
     def build_message(self, path):
         """
@@ -63,7 +70,9 @@ class Builder(object):
         """
 
         self.build_masters()
-        self.write_template(path)
+        # if html write
+        if path.endswith(".html"):
+            self.write_template(path)
         self.sync(path)
 
     def write_template(self, path):
@@ -71,9 +80,11 @@ class Builder(object):
         Write template out to specified output directory.
         """
 
-        abs_path = os.path.join(path, 'index.html')
-        rel_path = abs_path.replace(self.src, '')
-
+        # automatically exit if html file is empty as this throws error
+        if os.stat(path).st_size == 0:
+            return
+        # rel path is used by jinja
+        rel_path = path.replace(self.src, '')
         # template
         tmpl = self.jinja.get_template(rel_path)
         # move styles inline
@@ -82,7 +93,6 @@ class Builder(object):
         else:
             base_url = 'https://s3.amazonaws.com/' + self.aws['bucket']
             tmpl = transform(tmpl.render(), base_url=base_url)
-
         # save
         file_path = self.dest + rel_path
         dir_path = os.path.split(file_path)[0]
@@ -113,6 +123,8 @@ class Builder(object):
         """
 
         dest = dir.replace(self.src, self.dest)
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
         shutil.copytree(dir, dest)
 
     def sync_cloud(self, dir):

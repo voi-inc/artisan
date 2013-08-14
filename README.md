@@ -10,7 +10,7 @@ CLI build tool to help ease the pain of developing emails.
 Installation
 ------------
 
-Installing from source (from root):
+Installing from source:
 
 `python setup.py install`
 
@@ -70,16 +70,12 @@ Usage
 Tests
 -----
 
-From root:
-
 `python setup.py test`
 
 
 
 Developing
 ----------
-
-From root:
 
 `python setup.py develop`
 

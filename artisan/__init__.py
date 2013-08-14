@@ -1,5 +1,6 @@
 # stdlib
 import os
+import time
 import json
 import argparse
 
@@ -36,15 +37,23 @@ class Artisan(object):
 
         dest = self.src.replace(os.path.basename(self.src), 'preview')
         watcher = Watcher(self.src, dest)
-        server = Server(dest, self.port)
+        server = Server(dest, self.config["port"])
 
+        # Keep her up and running
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            server.shutdown()
+            watcher.shutdown()
+        
     def ship(self):
         """
         Sync assets to s3 and create final build templates
         """
 
         dest = self.src.replace(os.path.basename(self.src), 'build')
-        artisan = Artisan('cloud', self.src, dest, self.aws)
+        artisan = Artisan('cloud', self.src, dest, self.config["aws"])
         artisan.build()
 
 
@@ -64,6 +73,7 @@ def console():
         choices=['craft', 'ship']
     )
     args = parser.parse_args()
+
     # Run program
     artisan = Artisan(args.method)
 

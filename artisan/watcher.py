@@ -1,11 +1,9 @@
 # stdlib
 import os
 import time
-import argparse
-import threading
 
 # 3rd party
-from watchdog.observers import Observer
+from watchdog.observers.polling import PollingObserver as Observer
 from watchdog.events import FileSystemEventHandler
 
 # artisan
@@ -33,6 +31,7 @@ class Watcher(object):
         self.observer.join()
 
 
+
 class ObserverHandler(FileSystemEventHandler):
     """
     Watch for file changes in the src directory and update preview
@@ -47,6 +46,7 @@ class ObserverHandler(FileSystemEventHandler):
         self.dest = dest
         # New builder
         self.builder = Builder('local', self.src, self.dest)
+        self.builder.build()
 
     def dispatch(self, event):
         # Modified to not dispatch create
@@ -72,7 +72,7 @@ class ObserverHandler(FileSystemEventHandler):
     def get_base_dir(self, path):
         # Helper method to return parent directory - either master or message.
         path = path.replace(self.src, '')
-        return path.split('/')[1]
+        #return path.split('/')[1]
 
 
 # Do not run if imported

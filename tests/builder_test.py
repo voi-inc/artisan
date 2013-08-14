@@ -43,11 +43,12 @@ class BuilderTest(unittest.TestCase):
 
     def test_write(self):
         # new builder and write
+        src_path = os.path.join(self.success_message['src'], 'index.html')
         builder = Builder('local', self.src, self.dest, self.aws)
-        builder.write_template(self.success_message['src'])
+        builder.write_template(src_path)
         # check for successfull write
-        file_path = os.path.join(self.success_message['build'], 'index.html')
-        self.assertTrue(os.path.isfile(file_path))
+        build_path = os.path.join(self.success_message['build'], 'index.html')
+        self.assertTrue(os.path.isfile(build_path))
         # clean up
         shutil.rmtree(self.dest)
 
