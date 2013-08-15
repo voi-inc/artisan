@@ -153,6 +153,9 @@
 		}
 		.body-font {
 			font-family: Georgia, 'Times New Roman', Times, serif;
+			line-height: 1.4em;
+			margin-top: 0;
+			margin-bottom: 0;
 		}
 		.content-font {
 			color: #666;
@@ -238,12 +241,36 @@
 			<td width="530">
 				<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 15px;margin-bottom: 15px;margin-left: auto;margin-right: auto;" >
 					<tr>
-						<td width="15">&nbsp;</td>
+						<td style="height:15px">&nbsp;</td>
 						<td>
-							<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-left: auto;margin-right: auto; background-color: #ffffff;" >
+							<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-left: auto;margin-right: auto;" >
 								<tr>
 									<td>
-										{% block content %}{% endblock %}
+										<!-- Content Area -->
+										<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fac657;" >
+											<tr style="height: 10px;"><td style="font-size: 0; line-height: 1;">&nbsp;</td></tr>
+											<tr>
+												<td>
+													<img style="width: 100%" src="/masters/01/images/header.jpg" alt="Artisan">
+													<div style="padding-top: 10px; padding-bottom: 10px;">
+														<p class="body-font m-zero-vertical m-cushion-horizontal" style="text-align: left; color: #fff; font-style: italic;">
+															Dear Fellow Artisan,
+														</p>
+													</div>
+												</td>
+											</tr>
+										</table>
+										<table width="100%" cellpadding="0" cellspacing="0" border="0">
+											<tr style="height: 10px;"><td style="font-size: 0; line-height: 1;">&nbsp;</td></tr>
+										</table>
+										<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff;">
+											<tr>
+												<td>
+													{% block content %}{% endblock %}
+												</td>
+											</tr>
+										</table>
+										<!-- Content Area End -->
 									</td>
 								</tr>
 							</table>

@@ -59,8 +59,7 @@ class Builder(object):
             for file_name in os.listdir(message_dir):
                 # if html write
                 file_path = os.path.join(message_dir, file_name)
-                if file_path.endswith(".html"):
-                    self.write_template(file_path)
+                self.write_template(file_path)
             # sync dir images
             self.sync(message_dir)
 
@@ -70,9 +69,7 @@ class Builder(object):
         """
 
         self.build_masters()
-        # if html write
-        if path.endswith(".html"):
-            self.write_template(path)
+        self.write_template(path)
         self.sync(path)
 
     def write_template(self, path):
@@ -80,8 +77,8 @@ class Builder(object):
         Write template out to specified output directory.
         """
 
-        # automatically exit if html file is empty as this throws error
-        if os.stat(path).st_size == 0:
+        # automatically exit if not file is empty or not a template
+        if os.stat(path).st_size == 0 or not self.is_template(path):
             return
         # rel path is used by jinja
         rel_path = path.replace(self.src, '')
@@ -89,7 +86,10 @@ class Builder(object):
         tmpl = self.jinja.get_template(rel_path)
         # move styles inline
         if (self.type == 'local'):
-            tmpl = transform(tmpl.render())
+            if path.endswith(".txt"):
+                tmpl = tmpl.render()
+            else:
+                tmpl = transform(tmpl.render())
         else:
             base_url = 'https://s3.amazonaws.com/' + self.aws['bucket']
             tmpl = transform(tmpl.render(), base_url=base_url)
@@ -156,3 +156,9 @@ class Builder(object):
             key = bucket.new_key(key_name)
             key.set_contents_from_filename(file_name)
             key.set_acl('public-read')
+
+    def is_template(self, path):
+        if path.endswith(".html") or path.endswith(".txt"):
+            return True
+        else:
+            return False

@@ -1,0 +1,8 @@
+{% extends "masters/01/index.txt" %}
+{% block content %}
+
+Congratulations on taking the first step towards sanity. Artisan hopes to ease the pain of email development by giving you a small subset of tools. You will be creating beautiful hand crafted emails in no time.
+
+The Artisan CLI is written in python. Please read the docs for further information.
+	
+{% endblock %}

@@ -1,0 +1,7 @@
+Artisan
+
+Emails Made Easy
+Well maybe not easy... but less painful
+
+Dear Fellow Artisan,
+{% block content %}{% endblock %}
