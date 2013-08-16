@@ -15,7 +15,6 @@ apt-get install libxml2-dev
 apt-get install libxslt-dev
 
 
-
 Installation
 ------------
 
@@ -23,6 +22,9 @@ Installing from source:
 
 `python setup.py install`
 
+* temporary due to issue with setuptools and forked packages
+`pip uninstall premailer`
+`python setup.py install`
 
 
 Setup
