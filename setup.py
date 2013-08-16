@@ -12,7 +12,7 @@ if os.path.exists('README.txt'): long_description = open('README.txt').read()
 # Setup Package
 setup(
     name = 'email-artisan',
-    version = '0.0.1',
+    version = '0.0.3',
     description = 'CLI build tool to help ease the pain of developing emails.',
     long_description = long_description,
     keywords = 'Artisan, Email, Premailer, Templating',
@@ -20,6 +20,9 @@ setup(
     author = 'Jarid Margolin',
     author_email = 'jaridmargolin@gmail.com',
     license ='MIT',
+    dependency_links = [
+        'http://github.com/jaridmargolin/premailer/tarball/master#egg=premailer-1.2.2'
+    ],
     install_requires = [
 		'Jinja2==2.7',
 		'premailer==1.2.2',

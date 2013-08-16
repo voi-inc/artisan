@@ -2,6 +2,9 @@
 .vagrant
 Vagrantfile
 
+tests/emails/preview
+tests/emails/build
+
 *.py[cod]
 
 # C extensions

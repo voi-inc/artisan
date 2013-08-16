@@ -53,8 +53,8 @@ class Artisan(object):
         """
 
         dest = self.src.replace(os.path.basename(self.src), 'build')
-        artisan = Artisan('cloud', self.src, dest, self.config["aws"])
-        artisan.build()
+        builder = Builder('cloud', self.src, dest, self.config["aws"])
+        builder.build()
 
 
 def console():

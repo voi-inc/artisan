@@ -7,6 +7,15 @@ CLI build tool to help ease the pain of developing emails.
 
 
 
+Requirements
+------------
+apt-get install libpq-dev
+apt-get install python-dev
+apt-get install libxml2-dev
+apt-get install libxslt-dev
+
+
+
 Installation
 ------------
 

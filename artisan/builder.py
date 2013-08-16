@@ -45,7 +45,9 @@ class Builder(object):
         """
 
         for name in os.listdir(self.master_tmpls):
-            self.sync(os.path.join(self.master_tmpls, name))
+            dir_path = os.path.join(self.master_tmpls, name)
+            if os.path.isdir(dir_path):
+                self.sync(os.path.join(self.master_tmpls, name))
 
     def build_messages(self):
         """
@@ -55,6 +57,8 @@ class Builder(object):
 
         for dir_name in os.listdir(self.message_tmpls):
             message_dir = os.path.join(self.message_tmpls, dir_name)
+            if not os.path.isdir(message_dir):
+                continue
             # Loop through all files in message dir
             for file_name in os.listdir(message_dir):
                 # if html write
@@ -91,7 +95,7 @@ class Builder(object):
             else:
                 tmpl = transform(tmpl.render())
         else:
-            base_url = 'https://s3.amazonaws.com/' + self.aws['bucket']
+            base_url = 'https://s3.amazonaws.com/{}/'.format(self.aws['bucket'])
             tmpl = transform(tmpl.render(), base_url=base_url)
         # save
         file_path = self.dest + rel_path
@@ -139,15 +143,8 @@ class Builder(object):
 
         # delete bucket if it exists
         bucket = conn.lookup(self.aws['bucket'])
-        if bucket is not None:
-            # delete keys
-            for key in bucket.list():
-                key.delete()
-            # delete bucket
-            conn.delete_bucket(self.aws['bucket'])
-
-        # create bucket
-        bucket = conn.create_bucket(self.aws['bucket'])
+        if bucket is None:
+            bucket = conn.create_bucket(self.aws['bucket'])
 
         # add all images & make public
         for name in os.listdir(dir):
