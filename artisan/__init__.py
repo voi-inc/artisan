@@ -16,18 +16,15 @@ class Artisan(object):
     Read config, and execute specified method, passing all required params.
     """
 
-    def __init__(self, method):
+    def __init__(self):
         # Cache
-        self.src = os.path.join(os.getcwd(), 'src')
+        self.base_dir = os.getcwd()
         # Open, parse, and close config
-        file = open(os.path.join(os.getcwd(), 'artisan.json'))
-        data = json.load(file)
-        file.close()
+        with open(os.path.join(self.base_dir, 'artisan.json'), 'r') as file:
+            data = json.load(file)
+
         # Merge and return
         self.config = merge({"port": 8080}, data)
-        # Call passed method
-        method = getattr(self, method)
-        method()
 
     def craft(self):
         """
@@ -35,8 +32,9 @@ class Artisan(object):
         and observing file system for changes
         """
 
-        dest = self.src.replace(os.path.basename(self.src), 'preview')
-        watcher = Watcher(self.src, dest)
+        dest = os.path.join(self.base_dir, 'preview')
+        src_dir = os.path.join(self.base_dir, 'src')
+        watcher = Watcher(src_dir, dest)
         server = Server(dest, self.config["port"])
 
         # Keep her up and running
@@ -46,14 +44,15 @@ class Artisan(object):
         except KeyboardInterrupt:
             server.shutdown()
             watcher.shutdown()
-        
+
     def ship(self):
         """
         Sync assets to s3 and create final build templates
         """
 
-        dest = self.src.replace(os.path.basename(self.src), 'build')
-        builder = Builder('cloud', self.src, dest, self.config["aws"])
+        dest = os.path.join(self.base_dir, 'build')
+        src_dir = os.path.join(self.base_dir, 'src')
+        builder = Builder('cloud', src_dir, dest, self.config["aws"])
         builder.build()
 
 
@@ -75,7 +74,8 @@ def console():
     args = parser.parse_args()
 
     # Run program
-    artisan = Artisan(args.method)
+    artisan = Artisan()
+    getattr(artisan, args.method)()
 
 
 # Do not run if imported

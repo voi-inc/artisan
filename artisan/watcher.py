@@ -14,7 +14,6 @@ class Watcher(object):
     """
     Setup and manage watchdog daemon.
     """
-
     def __init__(self, src, dest):
         # Cache vars
         self.dest = dest
@@ -75,7 +74,3 @@ class ObserverHandler(FileSystemEventHandler):
         path = path.replace(self.src, '')
         return path.split('/')[1]
 
-
-# Do not run if imported
-if __name__ == '__main__':
-    console()

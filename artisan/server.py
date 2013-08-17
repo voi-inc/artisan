@@ -5,13 +5,13 @@ import argparse
 import threading
 import SocketServer
 from SimpleHTTPServer import SimpleHTTPRequestHandler
+import sys
 
 
 class Server(object):
     """
     Serve files in a specified directory on a specified port
     """
-
     def __init__(self, dir, port):
         # Change cwd and setup http server
         os.chdir(dir)
@@ -25,13 +25,14 @@ class Server(object):
         self.httpd.allow_reuse_address = True
         self.httpd.server_bind()
         self.httpd.server_activate()
+
         # Start server in new thread
-        self.server_thread = threading.Thread(target=self.worker)
+        def worker(self):
+            self.httpd.serve_forever()
+
+        self.server_thread = threading.Thread(target=worker)
         self.server_thread.daemon = True
         self.server_thread.start()
-
-    def worker(self):
-        self.httpd.serve_forever()
 
     def shutdown(self):
         self.httpd.shutdown()
@@ -42,6 +43,7 @@ def console():
     """
     Parse arguments and start server daemon
     """
+    ret_code = 0
 
     # Command line parser
     parser = argparse.ArgumentParser(
@@ -69,8 +71,12 @@ def console():
             time.sleep(1)
     except KeyboardInterrupt:
         server.shutdown()
+        ret_code = 1
+
+    return ret_code
 
 
 # Do not run if imported
 if __name__ == '__main__':
-    console()
+    sys.exit(console())
+

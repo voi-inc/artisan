@@ -26,8 +26,8 @@ class Builder(object):
                 raise ValueError('Must provide credentials')
             self.aws = aws
         # Master & Child Templates
-        self.master_tmpls = os.path.join(self.src, 'masters')
-        self.message_tmpls = os.path.join(self.src, 'messages')
+        self.master_tmpls_dir = os.path.join(self.src, 'masters')
+        self.message_tmpls_dir = os.path.join(self.src, 'messages')
         # Setup jinja root path
         self.jinja = Environment(loader=FileSystemLoader(self.src))
 
@@ -35,7 +35,6 @@ class Builder(object):
         """
         Build all masters and all messages.
         """
-
         self.build_masters()
         self.build_messages()
 
@@ -43,20 +42,18 @@ class Builder(object):
         """
         Loop over all masters and sync data.
         """
-
-        for name in os.listdir(self.master_tmpls):
-            dir_path = os.path.join(self.master_tmpls, name)
+        base_dir = self.master_tmpls_dir
+        for dir_path, name in (os.path.join(base_dir, x), x for x in os.listdir(base_dir)):
             if os.path.isdir(dir_path):
-                self.sync(os.path.join(self.master_tmpls, name))
+                self.sync(os.path.join(self.master_tmpls_dir, name))
 
     def build_messages(self):
         """
         Loop over all messages and build each html file. Also, sync 
-        images in eacher message directory
+        images in each message directory
         """
-
-        for dir_name in os.listdir(self.message_tmpls):
-            message_dir = os.path.join(self.message_tmpls, dir_name)
+        for dir_name in os.listdir(self.message_tmpls_dir):
+            message_dir = os.path.join(self.message_tmpls_dir, dir_name)
             if not os.path.isdir(message_dir):
                 continue
             # Loop through all files in message dir
@@ -71,7 +68,6 @@ class Builder(object):
         """
         Build one message.
         """
-
         self.build_masters()
         self.write_template(path)
         self.sync(path)
@@ -90,7 +86,8 @@ class Builder(object):
         tmpl = self.jinja.get_template(rel_path)
         # move styles inline
         if (self.type == 'local'):
-            if path.endswith(".txt"):
+            # TODO -- what happens if the file ends with .TXT?
+            if path[-4:].lower().endswith(".txt"):
                 tmpl = tmpl.render()
             else:
                 tmpl = transform(tmpl.render())
@@ -98,12 +95,13 @@ class Builder(object):
             base_url = 'https://s3.amazonaws.com/{}/'.format(self.aws['bucket'])
             tmpl = transform(tmpl.render(), base_url=base_url)
         # save
-        file_path = self.dest + rel_path
+        file_path = os.path.join(self.dest, rel_path.strip(os.sep))
         dir_path = os.path.split(file_path)[0]
         # create dir if it does not exist
         if not os.path.isdir(dir_path):
             os.makedirs(dir_path)
         # open and write
+        # TODO -- with...
         file = open(file_path, 'w+')
         file.write(tmpl)
 
@@ -111,7 +109,6 @@ class Builder(object):
         """
         Determine and call appropriate sync method.
         """
-
         # src img directory
         img_dir = os.path.join(path, 'images')
         # only relevent if images exist
@@ -125,7 +122,7 @@ class Builder(object):
         """
         Determine and call appropriate sync method.
         """
-
+        # TODO -- better docblock comments here
         dest = dir.replace(self.src, self.dest)
         if os.path.exists(dest):
             shutil.rmtree(dest)
@@ -135,7 +132,6 @@ class Builder(object):
         """
         Sync image assets from specified directory to Amazon S3.
         """
-
         conn = boto.connect_s3(
             aws_access_key_id=self.aws['aws_access_key_id'],
             aws_secret_access_key=self.aws['aws_secret_access_key']
@@ -155,7 +151,9 @@ class Builder(object):
             key.set_acl('public-read')
 
     def is_template(self, path):
+        # TODO -- (also import re module) re.search('\.(?:txt|html)', path, re.I)
         if path.endswith(".html") or path.endswith(".txt"):
             return True
         else:
             return False
+
