@@ -1,6 +1,10 @@
 language: python
 python:
   - "2.7"
+# only test the master branch
+branches:
+  only:
+    - master
 # install native libraries
 before_install:
  - sudo apt-get install python-dev
