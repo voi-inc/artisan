@@ -1,5 +1,6 @@
 # stdlib
 import os
+import multiprocessing
 from setuptools import setup, find_packages
 
 
@@ -20,12 +21,9 @@ setup(
     author = 'Jarid Margolin',
     author_email = 'jaridmargolin@gmail.com',
     license ='MIT',
-    dependency_links = [
-        'http://github.com/jaridmargolin/premailer/tarball/master#egg=premailer-1.2.2'
-    ],
     install_requires = [
 		'Jinja2==2.7',
-		'premailer==1.2.2',
+		'premailer==1.2.3',
 		'watchdog==0.6.0',
         'flexmock==0.9.4',
         'boto==2.9.9'

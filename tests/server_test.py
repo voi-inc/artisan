@@ -11,33 +11,25 @@ class ServerTest(unittest.TestCase):
     """
     Test individual methods in Server class.
     """
-
-    # Properties
     PORT = 8080
     serve_dir = os.path.join(os.getcwd(), 'tests/emails')
     test_url = 'http://localhost:8080/artisan.json'
 
-    @classmethod
-    def setUpClass(self):
+    def test_server(self):
         # Start server
         self.server = Server(self.serve_dir, self.PORT)
-
-    @classmethod
-    def tearDownClass(self):
-        # Stop server daemon
-        self.server.shutdown()
-
-    def test_server(self):
+        self.server.start()
         # Request anc check status code
         status = urllib.urlopen(self.test_url).getcode()
         self.assertEqual(status, 200)
+        # Stop server daemon
+        self.server.shutdown()
 
 
 def suite():
     """
     Gather all the tests from this module in a test suite.
     """
-
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(ServertTest))
     return test_suite

@@ -7,12 +7,61 @@ CLI build tool to help ease the pain of developing emails.
 
 
 
+Why? What?
+----------
+Developing, testing, and publishing handcrafted emails is a pain. Lets look at the following example:
+
+![Example Usage](https://i.cloudup.com/yPloOPZ189.png)
+
+We have 3 email messages that all use a similiar shell, but have varying interior content. Artisan uses jinja2 templating to allow reuse of this outer shell.
+
+![Example Usage Explained](https://i.cloudup.com/J2zFfpnLmj.png)
+
+### Craft
+
+The `artisan craft` method offers a live development environment that watches for file changes and builds your email messages on the fly. Artisan also utilizes the opensource premailer package, which takes external styles, and moves them inline. For example:
+
+**src**
+
+	<style>
+		.table-zero {
+			margin-top: 0;
+			margin-right: 0;
+			margin-bottom: 0;
+			margin-left: 0;
+			padding-top: 0;
+			padding-right: 0;
+			padding-bottom: 0;
+			padding-left: 0;
+		}
+	</style>
+	
+	<table class="table-zero"></table>
+	
+**build**
+
+	<table style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;"></table>
+
+
+### Ship
+
+The `artisan ship` method is used to sync your media to a cloud provider (right now there is only support for Amazon S3). It will also create a `build` directory wich holds your html with your updated img paths.
+
+**src**
+
+	<img src="/masters/01/images/logo.png" alt="Logo">
+
+**build**
+
+	<img src="https://s3.amazonaws.com/bucketname/masters/01/images/logo.png" alt="Logo">
+
+
+
 Requirements
 ------------
-apt-get install libpq-dev
-apt-get install python-dev
-apt-get install libxml2-dev
-apt-get install libxslt-dev
+- `python-dev`
+- `libxml2-dev`
+- `libxslt-dev`
 
 
 Installation
@@ -20,11 +69,9 @@ Installation
 
 Installing from source:
 
-`python setup.py install`
-
-* temporary due to issue with setuptools and forked packages
-`pip uninstall premailer`
-`python setup.py install`
+1. `git clone https://github.com/firstopinion/artisan.git`
+2. `cd artisan`
+3. `python setup.py install`
 
 
 Setup
@@ -47,12 +94,14 @@ Artisan uses a specific directory structure in order to build. Make sure your wo
 	  - preview (created when running artisan craft)
 
 Add an artisan.json file to your working directory:
-
+	
 	{
 		"port": 8080,
-		"aws": {
-			"aws_access_key_id": "ACCESS_KEY",
-			"aws_secret_access_key": "SECRET_KEY"
+		"storage": {
+			"type": "aws",
+			"aws_access_key_id": "I_AM_A_SECRET",
+			"aws_secret_access_key": "I_AM_A_KEY",
+			"bucket": "I_AM_A_BUCKET"
 		}
 	}
 
@@ -61,18 +110,9 @@ Add an artisan.json file to your working directory:
 Usage
 -----
 
-### Develop:
-
 `artisan craft`
 
-#### Options
-
-| Name   | Short |  Description                                           | Default     |
-| ------ | ----- | ------------------------------------------------------ | ----------- |
-| --cwd  | -d    | Dir script is executed from                            | os.getcwd() |
-| --port | -p    | Port files are served.                                 | 8080        |
-
-### Publish:
+or
 
 `artisan ship`
 
@@ -95,16 +135,22 @@ Developing
 Todos
 -----
 
-1. Add to pip
+1. Fix README issue with pip long description
 2. Write tests for S3 sync using fake-s3: https://github.com/jubos/fake-s3
 3. Update ship to only push modified images
+4. Create firstopinion.github.io/artisan
+
+Known Issues
+------------
+
+1. Ship does not remove images when deleted in source.
 
 
 
 License
 -------
 The MIT License (MIT)
-Copyright (c) 2013 Jarid Margolin
+Copyright (c) 2013 First Opinion
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

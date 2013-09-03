@@ -12,6 +12,6 @@ before_install:
  - sudo apt-get install libxslt-dev
 # command to install dependencies
 install:
-  - python setup.py install
+  - sudo python setup.py install
 # command to run tests
-script: python setup.py test
+script: sudo python setup.py test

@@ -2,20 +2,27 @@
 import unittest
 
 # artisan
+import artisan_test
 import builder_test
+import crafter_test
 import server_test
-import watcher_test
+import shipper_test
+import syncer_test
+import utils_test
 
 
 def suite():
     """
     Gather all the tests from this package in a test suite.
     """
-
     test_suite = unittest.TestSuite()
+    test_suite.addTest(artisan.suite())
     test_suite.addTest(builder.suite())
+    test_suite.addTest(crafter.suite())
     test_suite.addTest(server.suite())
-    test_suite.addTest(watcher.suite())
+    test_suite.addTest(shipper.suite())
+    test_suite.addTest(syncer.suite())
+    test_suite.addTest(utils.suite())
     return test_suite
 
 

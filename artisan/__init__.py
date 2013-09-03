@@ -1,68 +1,14 @@
 # stdlib
-import os
-import time
-import json
 import argparse
 
 # artisan
-from utils import merge
-from server import Server
-from watcher import Watcher
-from builder import Builder
-
-
-class Artisan(object):
-    """
-    Read config, and execute specified method, passing all required params.
-    """
-
-    def __init__(self, method):
-        # Cache
-        self.src = os.path.join(os.getcwd(), 'src')
-        # Open, parse, and close config
-        file = open(os.path.join(os.getcwd(), 'artisan.json'))
-        data = json.load(file)
-        file.close()
-        # Merge and return
-        self.config = merge({"port": 8080}, data)
-        # Call passed method
-        method = getattr(self, method)
-        method()
-
-    def craft(self):
-        """
-        Starting crafting by setting up a temp server
-        and observing file system for changes
-        """
-
-        dest = self.src.replace(os.path.basename(self.src), 'preview')
-        watcher = Watcher(self.src, dest)
-        server = Server(dest, self.config["port"])
-
-        # Keep her up and running
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            server.shutdown()
-            watcher.shutdown()
-        
-    def ship(self):
-        """
-        Sync assets to s3 and create final build templates
-        """
-
-        dest = self.src.replace(os.path.basename(self.src), 'build')
-        builder = Builder('cloud', self.src, dest, self.config["aws"])
-        builder.build()
+from artisan import Artisan
 
 
 def console():
     """
     Parse arguments and create new Artisan instance
     """
-
-    # Command line parser
     parser = argparse.ArgumentParser(
         description='Start web server using passed directory and port'
     )
@@ -75,7 +21,8 @@ def console():
     args = parser.parse_args()
 
     # Run program
-    artisan = Artisan(args.method)
+    artisan = Artisan()
+    return getattr(artisan, args.method)()
 
 
 # Do not run if imported

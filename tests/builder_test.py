@@ -1,7 +1,6 @@
 # stdlib
 import unittest
 import os
-import time
 import shutil
 
 # 3rd party
@@ -15,85 +14,73 @@ class BuilderTest(unittest.TestCase):
     """
     Test individual methods in Builder class.
     """
+    src_dir = os.path.join(os.getcwd(), 'tests/emails/src')
+    dest_dir = os.path.join(os.getcwd(), 'tests/emails/build')
 
-    # Properties
-    src = os.path.join(os.getcwd(), 'tests/emails/src')
-    dest = os.path.join(os.getcwd(), 'tests/emails/build')
-    aws = {
-        "aws_access_key_id": "id",
-        "aws_secret_access_key": "secret",
-        "bucket": "email-artisan"
-    }
-
-    def setUp(self):
-        # Cache vars
-        self.success_message = self.create_paths('messages/success')
-        self.welcome_message = self.create_paths('messages/welcome')
-        self.first_master = self.create_paths('masters/01')
-        self.first_master_images = self.create_paths('masters/01/images')
-        self.second_master = self.create_paths('masters/02')
-        self.second_master_images = self.create_paths('masters/02/images')
-
-    def create_paths(self, str):
-        # Convenience fn to create paths and return dict.
-        return {
-            'src': os.path.join(self.src, str),
-            'build': os.path.join(self.dest, str)
-        }
-
-    def test_write(self):
-        # new builder and write
-        src_path = os.path.join(self.success_message['src'], 'index.html')
-        builder = Builder('local', self.src, self.dest, self.aws)
-        builder.write_template(src_path)
-        # check for successfull write
-        build_path = os.path.join(self.success_message['build'], 'index.html')
-        self.assertTrue(os.path.isfile(build_path))
-        # clean up
-        shutil.rmtree(self.dest)
-
-    def test_sync(self):
-        # Cache img dir
-        img_dir = os.path.join(self.success_message['src'], 'images')
-
-        # Test sync with local set
-        loc_builder = Builder('local', self.src, self.dest, self.aws)
-        (flexmock(loc_builder)
-            .should_receive("sync_local")
-            .with_args(img_dir)
+    def test_build_message(self):
+        # Cache usefule paths
+        message_dir = os.path.join(self.src_dir, 'messages/success')
+        # Mock syncer and make sure mirror method is called with the
+        # correct arguments
+        fake_syncer = flexmock()
+        (fake_syncer.should_receive('mirror')
+            .with_args(self.src_dir, self.dest_dir, message_dir)
             .times(1))
-        loc_builder.sync(self.success_message['src'])
-
-        # Test sync with cloud set
-        cloud_builder = Builder('cloud', self.src, self.dest, self.aws)
-        (flexmock(cloud_builder)
-            .should_receive("sync_cloud")
-            .with_args(img_dir)
+        # Init builder
+        builder = Builder(self.src_dir, self.dest_dir, fake_syncer)
+        # Make sure write_template is called once for the html file and
+        # once for the txt file
+        txt_file = os.path.join(message_dir, 'index.txt')
+        html_file = os.path.join(message_dir, 'index.html')
+        partial_builder = flexmock(builder)
+        (partial_builder.should_receive('write_template')
+            .and_return(None)
+            .with_args(txt_file)
             .times(1))
-        cloud_builder.sync(self.success_message['src'])
+        (partial_builder.should_receive('write_template')
+            .and_return(None)
+            .with_args(html_file)
+            .times(1))
+        # Begin test by calling build_message method
+        builder.build_message(message_dir)
 
-    def test_sync_local(self):
-        # Cache img dir
-        img_src_dir = os.path.join(self.success_message['src'], 'images')
-        img_build_dir = os.path.join(self.success_message['build'], 'images')
-        # Test
-        builder = Builder('local', self.src, self.dest, self.aws)
-        builder.sync_local(img_src_dir)
+    def test_copy_masters_imgs(self):
+        # Mock syncer and make sure mirror method is called 2x with the
+        # correct arguments
+        images_1_src_dir = message_dir = os.path.join(self.src_dir, 'masters/01')
+        images_2_src_dir = message_dir = os.path.join(self.src_dir, 'masters/02')
+        fake_syncer = flexmock()
+        (fake_syncer.should_receive('mirror')
+            .with_args(self.src_dir, self.dest_dir, images_1_src_dir)
+            .times(1))
+        (fake_syncer.should_receive('mirror')
+            .with_args(self.src_dir, self.dest_dir, images_2_src_dir)
+            .times(1))
+        # Init builder
+        builder = Builder(self.src_dir, self.dest_dir, fake_syncer)
+        builder.copy_masters_imgs()
+
+    def test_write_template(self):
+        # Mock syncer and make sure get_base_url method is called 1x
+        fake_syncer = flexmock()
+        (fake_syncer.should_receive('get_base_url')
+            .and_return('')
+            .times(1))
+        # New builder and write
+        builder = Builder(self.src_dir, self.dest_dir, fake_syncer)
+        src_html_file = os.path.join(self.src_dir, 'messages/success/index.html')
+        builder.write_template(src_html_file)
         # Check for successfull write
-        self.assertTrue(os.path.isdir(img_build_dir))
-        # clean up
-        shutil.rmtree(self.dest)
-
-    def test_sync_cloud(self):
-        # TODO (jaridmargolin): Implement fake-s3 for tests
-        pass
+        dest_html_file = os.path.join(self.dest_dir, 'messages/success/index.html')
+        self.assertTrue(os.path.isfile(dest_html_file))
+        # Clean up
+        shutil.rmtree(self.dest_dir)
 
 
 def suite():
     """
     Gather all the tests from this module in a test suite.
     """
-
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(BuilderTest))
     return test_suite

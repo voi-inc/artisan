@@ -1,161 +1,96 @@
 # stdlib
 import os
-import time
 import shutil
-import boto
 
 # 3rd party
 from jinja2 import Environment, FileSystemLoader
 from premailer import transform
 
+# artisan
+import utils
 
 class Builder(object):
     """
     Contains assets that builds and syncs data. This is the engine of the
     artisan package.
     """
-
-    def __init__(self, type, src, dest, aws=None):
-        # Defaults / Options
-        self.type = type
-        self.src = src
-        self.dest = dest
-        # Make sure we have creds for cloud push
-        if type != 'local':
-            if not aws:
-                raise ValueError('Must provide credentials')
-            self.aws = aws
-        # Master & Child Templates
-        self.master_tmpls = os.path.join(self.src, 'masters')
-        self.message_tmpls = os.path.join(self.src, 'messages')
-        # Setup jinja root path
-        self.jinja = Environment(loader=FileSystemLoader(self.src))
+    def __init__(self, src_dir, dest_dir, syncer):
+        # Cache dirs
+        self.src_dir = src_dir
+        self.dest_dir = dest_dir
+        # Cache syncer
+        self.syncer = syncer
 
     def build(self):
         """
         Build all masters and all messages.
         """
-
-        self.build_masters()
+        self.copy_masters_imgs()
         self.build_messages()
 
-    def build_masters(self):
+    def build_single(self, path):
         """
-        Loop over all masters and sync data.
+        Build a single template by building a single message and copying
+        over all masters imgs
         """
-
-        for name in os.listdir(self.master_tmpls):
-            dir_path = os.path.join(self.master_tmpls, name)
-            if os.path.isdir(dir_path):
-                self.sync(os.path.join(self.master_tmpls, name))
+        self.build_message(path)
 
     def build_messages(self):
         """
         Loop over all messages and build each html file. Also, sync 
         images in eacher message directory
         """
-
-        for dir_name in os.listdir(self.message_tmpls):
-            message_dir = os.path.join(self.message_tmpls, dir_name)
-            if not os.path.isdir(message_dir):
-                continue
-            # Loop through all files in message dir
-            for file_name in os.listdir(message_dir):
-                # if html write
-                file_path = os.path.join(message_dir, file_name)
-                self.write_template(file_path)
-            # sync dir images
-            self.sync(message_dir)
+        message_tmpls_dir = os.path.join(self.src_dir, 'messages')
+        for dir_name, dir_path in utils.each_subdir(message_tmpls_dir):
+            self.build_message(dir_path)
 
     def build_message(self, path):
         """
-        Build one message.
+        Write message templates and copy dir imgs
         """
+        for file_name, file_path in utils.each_tmpl(path):
+            self.write_template(file_path)
+        self.mirror_imgs(path)
 
-        self.build_masters()
-        self.write_template(path)
-        self.sync(path)
+    def copy_masters_imgs(self):
+        """
+        Loop over all masters and copy images.
+        """
+        master_tmpls_dir = os.path.join(self.src_dir, 'masters')
+        for dir_name, dir_path in utils.each_subdir(master_tmpls_dir):
+            self.mirror_imgs(dir_path)
+
+    def mirror_imgs(self, img_path):
+        """
+        Mirror images in src_dir to dest_dir
+        """
+        self.syncer.mirror(self.src_dir, self.dest_dir, img_path)
 
     def write_template(self, path):
         """
         Write template out to specified output directory.
         """
+        # Cache paths
+        rel_src_file = path.replace(self.src_dir, '')
+        abs_dest_file = os.path.join(self.dest_dir, rel_src_file.strip('/'))
+        abs_dest_dir = os.path.split(abs_dest_file)[0]
+        # Setup jinja root path. Get and render.
+        self.jinja = Environment(loader=FileSystemLoader(self.src_dir))
+        tmpl = self.jinja.get_template(rel_src_file).render()
+        # If html then inline css
+        if path.lower().endswith(".html"):
+            tmpl = transform(tmpl, base_url=self.syncer.get_base_url())
+        # Create dir if it does not exist
+        if not os.path.isdir(abs_dest_dir):
+            os.makedirs(abs_dest_dir)
+        # Save tmpl to file
+        with open(abs_dest_file, 'w+') as file:
+            file.write(tmpl)
 
-        # automatically exit if not file is empty or not a template
-        if os.stat(path).st_size == 0 or not self.is_template(path):
-            return
-        # rel path is used by jinja
-        rel_path = path.replace(self.src, '')
-        # template
-        tmpl = self.jinja.get_template(rel_path)
-        # move styles inline
-        if (self.type == 'local'):
-            if path.endswith(".txt"):
-                tmpl = tmpl.render()
+    def remove(self, src_path):
+        dest_path = src_path.replace(self.src_dir, self.dest_dir)
+        if os.path.exists(dest_path):
+            if os.path.isfile(dest_path):
+                os.remove(dest_path)
             else:
-                tmpl = transform(tmpl.render())
-        else:
-            base_url = 'https://s3.amazonaws.com/{}/'.format(self.aws['bucket'])
-            tmpl = transform(tmpl.render(), base_url=base_url)
-        # save
-        file_path = self.dest + rel_path
-        dir_path = os.path.split(file_path)[0]
-        # create dir if it does not exist
-        if not os.path.isdir(dir_path):
-            os.makedirs(dir_path)
-        # open and write
-        file = open(file_path, 'w+')
-        file.write(tmpl)
-
-    def sync(self, path):
-        """
-        Determine and call appropriate sync method.
-        """
-
-        # src img directory
-        img_dir = os.path.join(path, 'images')
-        # only relevent if images exist
-        if os.path.isdir(img_dir):
-            if (self.type == 'local'):
-                return self.sync_local(img_dir)
-            else:
-                self.sync_cloud(img_dir)
-
-    def sync_local(self, dir):
-        """
-        Determine and call appropriate sync method.
-        """
-
-        dest = dir.replace(self.src, self.dest)
-        if os.path.exists(dest):
-            shutil.rmtree(dest)
-        shutil.copytree(dir, dest)
-
-    def sync_cloud(self, dir):
-        """
-        Sync image assets from specified directory to Amazon S3.
-        """
-
-        conn = boto.connect_s3(
-            aws_access_key_id=self.aws['aws_access_key_id'],
-            aws_secret_access_key=self.aws['aws_secret_access_key']
-        )
-
-        # delete bucket if it exists
-        bucket = conn.lookup(self.aws['bucket'])
-        if bucket is None:
-            bucket = conn.create_bucket(self.aws['bucket'])
-
-        # add all images & make public
-        for name in os.listdir(dir):
-            file_name = os.path.join(dir, name)
-            key_name = os.path.join(dir.replace(self.src, ''), name)
-            key = bucket.new_key(key_name)
-            key.set_contents_from_filename(file_name)
-            key.set_acl('public-read')
-
-    def is_template(self, path):
-        if path.endswith(".html") or path.endswith(".txt"):
-            return True
-        else:
-            return False
+                shutil.rmtree(dest_path)

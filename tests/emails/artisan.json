@@ -1,8 +1,9 @@
 {
 	"port": 8080,
-	"aws": {
-		"aws_access_key_id": "AKIAJF6NWXT4KPOR7NSQ",
-		"aws_secret_access_key": "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",
-		"bucket": "fomail"
+	"storage": {
+		"type": "aws",
+		"aws_access_key_id": "I_AM_A_SECRET",
+		"aws_secret_access_key": "I_AM_A_KEY",
+		"bucket": "I_AM_A_BUCKET"
 	}
 }
